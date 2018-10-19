@@ -1,4 +1,8 @@
-dcgan/data
-data
+*.jpg
+*.png
+*.pth
 *.pyc
-OpenNMT/data
+*.exe
+*.zip
+build
+dist
