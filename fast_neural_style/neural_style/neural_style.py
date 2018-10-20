@@ -111,8 +111,12 @@ def train(args):
 
     # save model
     transformer.eval().cpu()
-    save_model_filename = "epoch_" + str(args.epochs) + "_" + str(time.ctime()).replace(' ', '_') + "_" + str(
-        args.content_weight) + "_" + str(args.style_weight) + ".model"
+    if args.name is None:
+        save_model_filename = str(os.path.normpath(os.path.basename(args.style_image))
+        [0:int(os.path.normpath(os.path.basename(args.style_image)).rfind("."))]) + ".pth"
+    else:
+        save_model_filename = str(args.name + ".pth")
+    
     save_model_path = os.path.join(args.save_model_dir, save_model_filename)
     torch.save(transformer.state_dict(), save_model_path)
 
@@ -185,6 +189,8 @@ def main():
                                   help="path to style-image")
     train_arg_parser.add_argument("--save-model-dir", type=str, required=True,
                                   help="path to folder where trained model will be saved.")
+    train_arg_parser.add_argument("--name", type=str, default=None,
+                                  help="name of the model to be saved, if not given defaults to the name of the style image")
     train_arg_parser.add_argument("--checkpoint-model-dir", type=str, default=None,
                                   help="path to folder where checkpoints of trained models will be saved")
     train_arg_parser.add_argument("--image-size", type=int, default=256,

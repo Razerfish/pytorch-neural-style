@@ -4,5 +4,8 @@
 *.pyc
 *.exe
 *.zip
+*.spec
+*.json
+compile.py
 build
 dist
