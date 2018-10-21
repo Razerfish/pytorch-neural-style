@@ -104,7 +104,11 @@ def train(args):
 
             if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
                 transformer.eval().cpu()
-                ckpt_model_filename = "ckpt_epoch_" + str(e) + "_batch_id_" + str(batch_id + 1) + ".pth"
+                if args.name is None:
+                    ckpt_model_filename = str(os.path.normpath(os.path.basename(args.style_image))
+                    [0:int(os.path.normpath(os.path.basename(args.style_image)).rfind("."))]) + "_" + str(batch_id + 1) + ".pth"
+                else:
+                    ckpt_model_filename = str(args.name) + "_" + str(batch_id + 1) + ".pth"
                 ckpt_model_path = os.path.join(args.checkpoint_model_dir, ckpt_model_filename)
                 torch.save(transformer.state_dict(), ckpt_model_path)
                 transformer.to(device).train()

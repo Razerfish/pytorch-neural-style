@@ -6,6 +6,4 @@
 *.zip
 *.spec
 *.json
-compile.py
-build
-dist
+compile
