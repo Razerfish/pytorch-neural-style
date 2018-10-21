@@ -1,6 +1,6 @@
 import torch
 from PIL import Image
-
+import json
 
 def load_image(filename, size=None, scale=None):
     img = Image.open(filename)
@@ -32,3 +32,34 @@ def normalize_batch(batch):
     std = batch.new_tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
     batch = batch.div_(255.0)
     return (batch - mean) / std
+
+class json2args():
+    def __init__(self, data):
+        if data["subcommand"] == "eval":
+            self.subcommand = "eval"
+            self.content_image = str(data["content_image"])
+            print(self.content_image)
+            self.content_scale = float(data["content_scale"])
+            self.output_image = str(data["output_image"])
+            self.model = str(data["model"])
+            self.cuda = int(data["cuda"])
+            self.export_onnx = str(data["export_onnx"])
+        else:
+            self.subcommand = "train"
+            self.epochs = int(data["self"])
+            self.batch_size = int(data["batch_size"])
+            self.dataset = str(data["dataset"])
+            self.style_image = str(data["style_image"])
+            self.save_model_dir = str(data["save_model_dir"])
+            self.name = str(data["name"])
+            self.checkpoint_model_dir = str(data["checkpoint_model_dir"])
+            self.image_size = int(data["image_size"])
+            self.style_size = int(data["style_size"])
+            self.cuda = int(data["cuda"])
+            self.seed = int(data["seed"])
+            self.content_weight = float(data["content_weight"])
+            self.style_weight = float(data["style_weight"])
+            self.lr = float(data["lr"])
+            self.log_interval = int(data["log_interval"])
+            self.checkpoint_interval =  int(data["checkpoint_interval"])
+            
