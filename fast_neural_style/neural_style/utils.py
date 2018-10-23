@@ -38,28 +38,67 @@ class json2args():
         if data["subcommand"] == "eval":
             self.subcommand = "eval"
             self.content_image = str(data["content_image"])
-            print(self.content_image)
-            self.content_scale = float(data["content_scale"])
-            self.output_image = str(data["output_image"])
+            try:
+                self.content_scale = float(data["content_scale"])
+            except KeyError:
+                self.content_scale = None
+            self.output_image = str((data["output_image"]))
             self.model = str(data["model"])
             self.cuda = int(data["cuda"])
-            self.export_onnx = str(data["export_onnx"])
+            try:
+                self.export_onnx = str(data["export_onnx"])
+            except KeyError:
+                self.export_onnx = None
         else:
             self.subcommand = "train"
-            self.epochs = int(data["self"])
-            self.batch_size = int(data["batch_size"])
+            try:
+                self.epochs = int(data["self"])
+            except KeyError:
+                self.epochs = 2
+            try:
+                self.batch_size = int(data["batch_size"])
+            except KeyError:
+                self.batch_size = 4
             self.dataset = str(data["dataset"])
             self.style_image = str(data["style_image"])
             self.save_model_dir = str(data["save_model_dir"])
-            self.name = str(data["name"])
-            self.checkpoint_model_dir = str(data["checkpoint_model_dir"])
-            self.image_size = int(data["image_size"])
-            self.style_size = int(data["style_size"])
+            try:
+                self.name = str(data["name"])
+            except KeyError:
+                self.name = None
+                self.checkpoint_model_dir = str(data["checkpoint_model_dir"])
+            except KeyError:
+                self.checkpoint_model_dir = None
+            try:
+                self.image_size = int(data["image_size"])
+            except KeyError:
+                self.image_size = 256
+            try:
+                self.style_size = int(data["style_size"])
+            except KeyError:
+                self.style_size = None
             self.cuda = int(data["cuda"])
-            self.seed = int(data["seed"])
-            self.content_weight = float(data["content_weight"])
-            self.style_weight = float(data["style_weight"])
-            self.lr = float(data["lr"])
-            self.log_interval = int(data["log_interval"])
-            self.checkpoint_interval =  int(data["checkpoint_interval"])
-            
+            try:
+                self.seed = int(data["seed"])
+            except KeyError:
+                self.seed = 42
+            try:
+                self.content_weight = float(data["content_weight"])
+            except KeyError:
+                self.content_weight = float(1e5)
+            try:
+                self.style_weight = float(data["style_weight"])
+            except KeyError:
+                self.style_weight = float(1e10)
+            try:
+                self.lr = float(data["lr"])
+            except KeyError:
+                self.lr = float(1e-3)
+            try:
+                self.log_interval = int(data["log_interval"])
+            except KeyError:
+                self.log_interval = 500
+            try:
+                self.checkpoint_interval = int(data["checkpoint_interval"])
+            except KeyError:
+                self.checkpoint_interval = 2000
