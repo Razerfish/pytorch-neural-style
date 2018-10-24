@@ -94,14 +94,8 @@ def train(args):
             agg_content_loss += content_loss.item()
             agg_style_loss += style_loss.item()
 
-            if (batch_id + 1) % args.log_interval == 0:
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\ttotal: {:.6f}".format(
-                    time.ctime(), e + 1, count, len(train_dataset),
-                                  agg_content_loss / (batch_id + 1),
-                                  agg_style_loss / (batch_id + 1),
-                                  (agg_content_loss + agg_style_loss) / (batch_id + 1)
-                )
-                print(mesg)
+            msg = '{"count":"' + str(batch_id + 1) + '", "total":"' + str(len(train_dataset) * int(args.epochs)) + '"}'
+            print(msg, flush=True)
 
             if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
                 transformer.eval().cpu()
@@ -179,9 +173,7 @@ def stylize_onnx_caffe2(content_image, args):
 
 
 def main():
-    json_input = open(os.path.normpath(sys.argv[1]), 'r').read()
-    args = utils.json2args(json.loads(json_input))
-
+    args = utils.json2args(json.loads(sys.argv[1]))
     if args.subcommand is None:
         print("ERROR: specify either train or eval")
         sys.exit(1)
