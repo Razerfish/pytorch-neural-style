@@ -25,7 +25,8 @@ def check_paths(args):
         if args.checkpoint_model_dir is not None and not (os.path.exists(args.checkpoint_model_dir)):
             os.makedirs(args.checkpoint_model_dir)
     except OSError as e:
-        print(e)
+        sys.stderr(e)
+        sys.stderr.flush()
         sys.exit(1)
 
 
@@ -59,6 +60,8 @@ def train(args):
 
     features_style = vgg(utils.normalize_batch(style))
     gram_style = [utils.gram_matrix(y) for y in features_style]
+
+    progress_count = 0
 
     for e in range(args.epochs):
         transformer.train()
@@ -94,8 +97,11 @@ def train(args):
             agg_content_loss += content_loss.item()
             agg_style_loss += style_loss.item()
 
-            msg = '{"count":"' + str(batch_id + 1) + '", "total":"' + str(len(train_dataset) * int(args.epochs)) + '"}'
-            print(msg, flush=True)
+            progress_count = progress_count + args.batch_size
+            msg = ('{"progress":"' + str(progress_count) + '", "total":"' + str(len(train_dataset) * int(args.epochs)) + '", "percent":"')
+            msg = msg + str(round(progress_count / (len(train_dataset) * args.epochs) * 100, 2)) + '%' + '"}'
+            print(msg)
+            sys.stdout.flush()
 
             if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
                 transformer.eval().cpu()
@@ -120,6 +126,7 @@ def train(args):
     torch.save(transformer.state_dict(), save_model_path)
 
     print("\nDone, trained model saved at", save_model_path)
+    sys.stdout.flush()
 
 
 def stylize(args):
@@ -175,10 +182,12 @@ def stylize_onnx_caffe2(content_image, args):
 def main():
     args = utils.json2args(json.loads(sys.argv[1]))
     if args.subcommand is None:
-        print("ERROR: specify either train or eval")
+        sys.stderr("ERROR: specify either train or eval")
+        sys.stderr.flush()
         sys.exit(1)
     if args.cuda and not torch.cuda.is_available():
-        print("ERROR: cuda is not available, try running on CPU")
+        sys.stderr("ERROR: cuda is not available, try running on CPU")
+        sys.stderr.flush()
         sys.exit(1)
 
     if args.subcommand == "train":

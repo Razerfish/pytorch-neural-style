@@ -6,7 +6,3 @@
 *.zip
 *.spec
 *.json
-compile
-build
-dist
-fast_neural_style/neural_style/make_json.py
