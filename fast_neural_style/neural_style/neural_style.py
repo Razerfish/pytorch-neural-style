@@ -31,6 +31,10 @@ def check_paths(args):
 
 
 def train(args):
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Setting up training"
+    }), flush=True)
     device = torch.device("cuda" if args.cuda else "cpu")
 
     np.random.seed(args.seed)
@@ -43,6 +47,10 @@ def train(args):
         transforms.Lambda(lambda x: x.mul(255))
     ])
     train_dataset = datasets.ImageFolder(args.dataset, transform)
+    print(json.dumps({
+        "type":"dataset_info",
+        "dataset_length":len(train_dataset) * args.epochs
+    }), flush=True)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
 
     transformer = TransformerNet().to(device)
@@ -61,7 +69,17 @@ def train(args):
     features_style = vgg(utils.normalize_batch(style))
     gram_style = [utils.gram_matrix(y) for y in features_style]
 
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Training setup done"
+    }), flush=True)
+
     progress_count = 0
+
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Starting training"
+    }), flush=True)
 
     for e in range(args.epochs):
         transformer.train()
@@ -98,9 +116,11 @@ def train(args):
             agg_style_loss += style_loss.item()
 
             progress_count = progress_count + args.batch_size
-            msg = ('{"progress":"' + str(progress_count) + '", "total":"' + str(len(train_dataset) * int(args.epochs)) + '", "percent":"')
-            msg = msg + str(round(progress_count / (len(train_dataset) * args.epochs) * 100, 2)) + '%' + '"}'
-            print(msg)
+            print(json.dumps({
+                "type":"training_progress",
+                "progress":str(progress_count),
+                "percent":str(round(progress_count / (len(train_dataset) * args.epochs) * 100, 2))
+            }), flush=True)
             sys.stdout.flush()
 
             if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
@@ -114,7 +134,16 @@ def train(args):
                 torch.save(transformer.state_dict(), ckpt_model_path)
                 transformer.to(device).train()
 
+    print(json.dumps({
+        "type":"status_update",
+        "status":"training done"
+    }), flush=True)
+
     # save model
+    print(json.dumps({
+        "type":"status_update",
+        "status":"saving model"
+    }), flush=True)
     transformer.eval().cpu()
     if args.name is None:
         save_model_filename = str(os.path.normpath(os.path.basename(args.style_image))
@@ -125,11 +154,18 @@ def train(args):
     save_model_path = os.path.join(args.save_model_dir, save_model_filename)
     torch.save(transformer.state_dict(), save_model_path)
 
-    print("\nDone, trained model saved at", save_model_path)
-    sys.stdout.flush()
+    print(json.dumps({
+        "type":"status_update",
+        "status":"model saved"
+    }), flush=True)
 
 
 def stylize(args):
+    print(json.dumps({
+        "type":"status_update",
+        "status":"starting stylization"
+    }), flush=True)
+
     device = torch.device("cuda" if args.cuda else "cpu")
 
     content_image = utils.load_image(args.content_image, scale=args.content_scale)
@@ -157,7 +193,23 @@ def stylize(args):
                 output = torch.onnx._export(style_model, content_image, args.export_onnx).cpu()
             else:
                 output = style_model(content_image).cpu()
+
+    print(json.dumps({
+        "type":"status_update",
+        "status":"done stylizing"
+    }), flush=True)
+
+    print(json.dumps({
+        "type":"status_update",
+        "status":"saving image"
+    }), flush=True)
+
     utils.save_image(args.output_image, output[0])
+    
+    print(json.dumps({
+        "type":"status_update",
+        "status":"image saved"
+    }), flush=True)
 
 
 def stylize_onnx_caffe2(content_image, args):

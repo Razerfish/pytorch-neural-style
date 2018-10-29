@@ -1,21 +1,47 @@
 import torch
 from PIL import Image
 import json
+import sys
 
 def load_image(filename, size=None, scale=None):
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Loading image"
+    }), flush=True)
     img = Image.open(filename)
     if size is not None:
         img = img.resize((size, size), Image.ANTIALIAS)
     elif scale is not None:
         img = img.resize((int(img.size[0] / scale), int(img.size[1] / scale)), Image.ANTIALIAS)
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Image loaded"
+    }), flush=True)
     return img
 
 
 def save_image(filename, data):
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Saving image"
+    }), flush=True)
     img = data.clone().clamp(0, 255).numpy()
     img = img.transpose(1, 2, 0).astype("uint8")
     img = Image.fromarray(img)
-    img.save(filename)
+    try:
+        img.save(filename)
+    except Exception as e:
+        print(json.dumps({
+            "type":"error",
+            "error":e
+        }), flush=True)
+        sys.stderr(e)
+        sys.stderr.flush()
+        sys.exit(1)
+    print(json.dumps({
+        "type":"status_update",
+        "status":"Image saved"
+    }), flush=True)
 
 
 def gram_matrix(y):
@@ -35,6 +61,12 @@ def normalize_batch(batch):
 
 class json2args():
     def __init__(self, data):
+        #Report status
+        print(json.dumps({
+            "type":"status_update",
+            "status":"Parsing args"
+        }), flush=True)
+
         if data["subcommand"] == "eval":
             self.subcommand = "eval"
 
@@ -119,3 +151,8 @@ class json2args():
                 self.checkpoint_interval = int(data["checkpoint_interval"])
             except KeyError:
                 self.checkpoint_interval = 2000
+            
+            print(json.dumps({
+                "type":"status_update",
+                "status":"Done parsing args"
+            }), flush=True)
