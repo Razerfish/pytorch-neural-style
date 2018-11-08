@@ -164,7 +164,7 @@ class json2args():
             except KeyError:
                 self.checkpoint_interval = 2000
 
-            log(json.dumps({
-                "type":"status_update",
-                "status":"Done parsing args"
-            }))
+        log(json.dumps({
+            "type":"status_update",
+            "status":"Done parsing args"
+        }))
