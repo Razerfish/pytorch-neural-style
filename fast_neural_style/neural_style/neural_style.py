@@ -46,6 +46,12 @@ def train(args):
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
+
+    log(json.dumps({
+        "type":"status_update",
+        "status":"Loading dataset"
+    }))
+    
     train_dataset = datasets.ImageFolder(args.dataset, transform)
     log(json.dumps({
         "type":"dataset_info",
@@ -62,12 +68,28 @@ def train(args):
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
+
+    log(json.dumps({
+        "type":"status_update",
+        "status":"Dataset loaded"
+    }))
+
+    log(json.dumps({
+    "type":"status_update",
+    "status":"Loading image"
+    }))
+
     style = utils.load_image(args.style_image, size=args.style_size)
     style = style_transform(style)
     style = style.repeat(args.batch_size, 1, 1, 1).to(device)
 
     features_style = vgg(utils.normalize_batch(style))
     gram_style = [utils.gram_matrix(y) for y in features_style]
+
+    log(json.dumps({
+        "type":"status_update",
+        "status":"Image loaded"
+    }))
 
     log(json.dumps({
         "type":"status_update",
@@ -161,12 +183,12 @@ def train(args):
 
 
 def stylize(args):
+    device = torch.device("cuda" if args.cuda else "cpu")
+
     log(json.dumps({
         "type":"status_update",
-        "status":"starting stylization"
+        "status":"Loading style image"
     }))
-
-    device = torch.device("cuda" if args.cuda else "cpu")
 
     content_image = utils.load_image(args.content_image, scale=args.content_scale)
     content_transform = transforms.Compose([
@@ -175,6 +197,16 @@ def stylize(args):
     ])
     content_image = content_transform(content_image)
     content_image = content_image.unsqueeze(0).to(device)
+
+    log(json.dumps({
+        "type":"status_update",
+        "status":"Done loading style image"
+    }))
+
+    log(json.dumps({
+    "type":"status_update",
+    "status":"Starting stylization"
+    }))
 
     if args.model.endswith(".onnx"):
         output = stylize_onnx_caffe2(content_image, args)
@@ -196,7 +228,7 @@ def stylize(args):
 
     log(json.dumps({
         "type":"status_update",
-        "status":"done stylizing"
+        "status":"Done stylizing"
     }))
 
     utils.save_image(args.output_image, output[0])

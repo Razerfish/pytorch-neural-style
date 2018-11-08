@@ -16,19 +16,11 @@ def log(data):
 
 
 def load_image(filename, size=None, scale=None):
-    log(json.dumps({
-        "type":"status_update",
-        "status":"Loading image"
-    }))
     img = Image.open(filename)
     if size is not None:
         img = img.resize((size, size), Image.ANTIALIAS)
     elif scale is not None:
         img = img.resize((int(img.size[0] / scale), int(img.size[1] / scale)), Image.ANTIALIAS)
-    log(json.dumps({
-        "type":"status_update",
-        "status":"Image loaded"
-    }))
     return img
 
 
