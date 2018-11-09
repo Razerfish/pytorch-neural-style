@@ -98,7 +98,7 @@ class json2args():
             except KeyError:
                 self.export_onnx = None
 
-        else:
+        elif data["subcommand"] == "train":
             self.subcommand = "train"
 
             try:
@@ -171,6 +171,9 @@ class json2args():
                 self.checkpoint_interval = int(data["checkpoint_interval"])
             except KeyError:
                 self.checkpoint_interval = 2000
+        
+        else:
+            sys.exit("Unknown subcommand: " + str(data["subcommand"]))
 
         log(json.dumps({
             "type":"status_update",
