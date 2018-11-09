@@ -2,6 +2,7 @@ import torch
 from PIL import Image
 import json
 import sys
+import os
 import time
 
 last = None
@@ -13,7 +14,6 @@ def log(data):
     else:
         input()
         print(data, flush=True)
-
 
 def load_image(filename, size=None, scale=None):
     img = Image.open(filename)
@@ -74,7 +74,10 @@ class json2args():
         if data["subcommand"] == "eval":
             self.subcommand = "eval"
 
-            self.content_image = str(data["content_image"])
+            if os.path.isfile(str(data["content_image"])):
+                self.content_image = str(data["content_image"])
+            else:
+                sys.exit("FATAL: Content image could not be found")
             
             try:
                 self.content_scale = float(data["content_scale"])
@@ -82,7 +85,12 @@ class json2args():
                 self.content_scale = None
 
             self.output_image = str((data["output_image"]))
-            self.model = str(data["model"])
+
+            if os.path.isfile(str(data["model"])):
+                self.model = str(data["model"])
+            else:
+                sys.exit("FATAL: Model file could not be found")
+
             self.cuda = int(data["cuda"])
 
             try:
@@ -103,8 +111,16 @@ class json2args():
             except KeyError:
                 self.batch_size = 4
 
-            self.dataset = str(data["dataset"])
-            self.style_image = str(data["style_image"])
+            if os.path.isdir(str(data["dataset"])):
+                self.dataset = str(data["dataset"])
+            else:
+                sys.exit("FATAL: Dataset not found")
+
+            if os.path.isfile(str(data["style_image"])):
+                self.style_image = str(data["style_image"])
+            else:
+                sys.exit("FATAL: Style image not found")
+
             self.save_model_dir = str(data["save_model_dir"])
 
             try:
