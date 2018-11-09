@@ -25,9 +25,7 @@ def check_paths(args):
         if args.checkpoint_model_dir is not None and not (os.path.exists(args.checkpoint_model_dir)):
             os.makedirs(args.checkpoint_model_dir)
     except OSError as e:
-        sys.stderr(e)
-        sys.stderr.flush()
-        sys.exit(1)
+        sys.exit(e)
 
 
 def train(args):
@@ -255,13 +253,9 @@ def stylize_onnx_caffe2(content_image, args):
 def main():
     args = utils.json2args(json.loads(sys.argv[1]))
     if args.subcommand is None:
-        sys.stderr("ERROR: specify either train or eval")
-        sys.stderr.flush()
-        sys.exit(1)
+        sys.exit("FATAL: Subcommand is None")
     if args.cuda and not torch.cuda.is_available():
-        sys.stderr("ERROR: cuda is not available, try running on CPU")
-        sys.stderr.flush()
-        sys.exit(1)
+        sys.exit("FATAL: CUDA is not available, try running on CPU")
 
     if args.subcommand == "train":
         check_paths(args)
