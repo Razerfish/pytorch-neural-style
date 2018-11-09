@@ -173,7 +173,7 @@ class json2args():
                 self.checkpoint_interval = 2000
         
         else:
-            sys.exit("Unknown subcommand: " + str(data["subcommand"]))
+            sys.exit("FATAL: Unknown subcommand: " + str(data["subcommand"]))
 
         log(json.dumps({
             "type":"status_update",
